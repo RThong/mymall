@@ -12,7 +12,7 @@ var users = require('./routes/users');
 var goods = require('./routes/goods')
 
 var app = express();
-
+mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://127.0.0.1:27017/mymall', {useMongoClient:true});
 
 mongoose.connection.on('connected',()=>{

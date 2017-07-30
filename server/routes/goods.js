@@ -5,7 +5,16 @@ var mongoose = require('mongoose');
 var Goods = require('../models/goods');
 
 router.get('/',(req,res,next)=>{
-	Goods.find({},(err,docs)=>{
+	let page = parseInt(req.query.page),
+			pageSize = parseInt(req.query.pageSize)
+			sort = req.query.sort,
+			skip = (page-1)*pageSize,
+			query = {};
+
+	let goodsModel = Goods.find(query).skip(skip).limit(pageSize);
+	goodsModel.sort({'salePrice': sort});
+
+	goodsModel.exec((err,docs)=>{
 		if(err){
 			res.json({
 				status:'1',
