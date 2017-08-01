@@ -37,14 +37,14 @@
 										<div class="name">{{item.productName}}</div>
 										<div class="price">{{item.salePrice}}</div>
 										<div class="btn-area">
-											<a href="javascript:;" class="btn btn--m">加入购物车</a>
+											<a href="javascript:;" class="btn btn--m" @click="addCart(item.productId)">加入购物车</a>
 										</div>
 									</div>
 								</li>
 								
 							</ul>
-							<div class="load-more" v-if="loadMoreChecked" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="30">
-								加载中...
+							<div class="load-more" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="30">
+								<img src="../assets/loading-spinning-bubbles.svg" alt="加载中..." v-if="loading">
 							</div>
 						</div>
 					</div>
@@ -89,17 +89,19 @@
 		      },
 		      {
 		      	startPrice: '1000',
-		      	endPrice: '2000'
+		      	endPrice: '5000'
 		      }
 	      ],
 	      priceChecked: 'all',
 	      filterbyChecked: false,
 	      mdChecked: false,
+	      loading: false,//控制loading图
 	      sortFlag: true,//控制升序降序
 	      page: 1,
 	      pageSize: 8,
 	      busy: true,
-	      loadMoreChecked:true
+	      flag: false//控制是否继续加载,
+
 	    }
 	  },
 	  components:{
@@ -111,32 +113,33 @@
 	  	this.getGoodsList();
 	  },
 	  methods:{
-	  	getGoodsList(){
+	  	getGoodsList(flag){	  		
 	  		axios.get('/goods', {
 	  			params: {
 	  				page: this.page,
 	  				pageSize: this.pageSize,
-	  				sort: this.sortFlag?1:-1
+	  				sort: this.sortFlag?1:-1,
+	  				priceLevel: this.priceChecked
 	  			}
-	  		}).then((res)=>{ 	
+	  		}).then((res)=>{	
 	  			let response = res.data;
 	  			if(response.status == '0'){
-	  				// if(flag){
+	  				if(flag){
 	  					this.goodsList = this.goodsList.concat(response.result.list);
 	  					this.busy = false;
 	  					if(response.result.count < this.pageSize){
 	  						this.busy = true;
-	  						this.loadMoreChecked = false;
 	  						return;
 	  					}
 	  									
-	  				// }else{
-	  				// 	this.goodsList = response.result.list;
-	  				// }
+	  				}else{
+	  					this.goodsList = response.result.list;
+	  					this.busy = false;
+	  				}
 	  				
 	  			}else{
 	  				this.goodsList = [];
-	  			}			  			
+	  			}
 	  		})
 	  	},
 	  	openFilter(){
@@ -150,22 +153,41 @@
 	  	priceCheck(index){
 	  		if(typeof index == 'undefined'){
 	  			this.priceChecked = 'all';
+	  			this.page = 1;
+	  			this.getGoodsList();
 	  		}else{
 	  			this.priceChecked = index;
+	  			this.page = 1;
+	  			this.getGoodsList();
 	  		}
 	  		this.closeFilter();
 	  	},//价格选项卡
 	  	sortGoods(){
 	  		this.sortFlag = !this.sortFlag;
+	  		this.page = 1;
 	  		this.getGoodsList();
 	  	},
 	  	loadMore(){
 	  		this.busy = true;
+	  		this.loading = true;
 
 	  		setTimeout(() => {
 	  			this.page++;
-	  			this.getGoodsList();
+	  			this.getGoodsList(true);
+	  			this.loading = false;
 	  		}, 1000);
+	  	},
+	  	addCart(productId){
+	  		axios.post('/goods/addCart',{
+	  			productId: productId
+	  		}).then((res)=>{
+	  			let response = res.data;
+	  			if(response.status == '0'){
+	  				alert('添加成功');
+	  			}else{
+	  				alert('msg:'+response.mag);
+	  			}
+	  		})
 	  	}
 	  }
 	}
