@@ -2,8 +2,8 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 
-var Goods = require('../models/good');
-var Users = require('../models/user');
+var Good = require('../models/good');
+var User = require('../models/user');
 
 //获取商品列表
 router.get('/',(req,res,next)=>{
@@ -38,10 +38,10 @@ router.get('/',(req,res,next)=>{
 			}
 		}
 	}
-	let goodsModel = Goods.find(query).skip(skip).limit(pageSize);
-	goodsModel.sort({'salePrice': sort});
+	let goodModel = Good.find(query).skip(skip).limit(pageSize);
+	goodModel.sort({'salePrice': sort});
 
-	goodsModel.exec((err,docs)=>{
+	goodModel.exec((err,docs)=>{
 		if(err){
 			res.json({
 				status:'1',
@@ -64,7 +64,7 @@ router.get('/',(req,res,next)=>{
 router.post('/addCart',(req,res,next)=>{
 	let productId = req.body.productId,
 			userId = '100000077';
-	Users.findOne({userId: userId},(err,userDoc)=>{
+	User.findOne({userId: userId},(err,userDoc)=>{
 		if(err){
 			res.json({
 				status:'1',
@@ -95,7 +95,7 @@ router.post('/addCart',(req,res,next)=>{
 					}
 				});
 			}else{
-				Goods.findOne({productId: productId},(err1,goodDoc)=>{
+				Good.findOne({productId: productId},(err1,goodDoc)=>{
 					if(err1){
 						res.json({
 							status:'1',
