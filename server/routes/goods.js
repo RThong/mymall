@@ -6,7 +6,7 @@ var Good = require('../models/good');
 var User = require('../models/user');
 
 //获取商品列表
-router.get('/',(req,res,next)=>{
+router.get('/list',(req,res,next)=>{
 	let page = parseInt(req.query.page),
 			pageSize = parseInt(req.query.pageSize),
 			priceLevel = req.query.priceLevel,

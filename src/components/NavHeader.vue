@@ -77,7 +77,18 @@
 				nickName: '',//用户名
 			}
 		},
+		mounted(){
+			this.checkLogin();
+		},
 		methods: {
+			checkLogin(){
+				axios.get('/users/checkLogin').then((response)=>{
+					let res = response.data;
+					if(res.status == '0'){
+						this.nickName = res.result.userName;
+					}
+				})
+			},
 			login(){
 				this.emptyTip = false;
 				this.errorTip = false;

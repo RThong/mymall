@@ -4,8 +4,22 @@ var router = express.Router();
 var User = require('../models/user');
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+router.get('/checkLogin', function(req, res, next) {
+  if(req.cookies.userId){
+  	res.json({
+  		status: '0',
+  		msg: '',
+  		result: {
+  			userName: req.cookies.userName
+  		}
+  	})
+  }else{
+  	res.json({
+  		status: '1',
+  		msg: '未登录',
+  		result: ''
+  	})
+  }
 });
 
 router.post('/login', (req, res, next)=>{
@@ -26,6 +40,10 @@ router.post('/login', (req, res, next)=>{
 					path: '/',
 					maxAge: 1000*60*60
 				});
+				res.cookie('userName',user.userName,{
+					path: '/',
+					maxAge: 1000*60*60
+				});
 				res.json({
 					status: '0',
 					msg: '',
@@ -43,6 +61,10 @@ router.post('/login', (req, res, next)=>{
 
 router.post('/logout', (req, res, next)=>{
 	res.cookie('userId','',{
+		path: '/',
+		maxAge: -1
+	});
+	res.cookie('userName','',{
 		path: '/',
 		maxAge: -1
 	});

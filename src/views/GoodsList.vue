@@ -52,6 +52,26 @@
 			</div>
 		</div>
 		<div class="md-overlay" v-if="mdChecked" @click="closeFilter()"></div>
+		<modal v-bind:mdShow="showFlag" v-on:close="closeModal()">
+			<p slot="message">
+				请先登录,否则无法加入到购物车
+			</p>
+			<div slot="btnGroup">
+				<a class="btn btn--m" href="javascript:;" @click="showFlag=false">关闭</a>
+			</div>
+		</modal>
+		<modal v-bind:mdShow="showCartFlag" v-on:close="closeModal()">
+			<p slot="message">
+				<svg class="icon-status-ok">
+					<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-status-ok"></use>
+				</svg>
+				<span>加入购物车成功!</span>
+			</p>
+			<div slot="btnGroup">
+				<a class="btn btn--m" href="javascript:;" @click="showCartFlag=false">继续购物</a>
+				<router-link class="btn btn--m" href="javascript:;" to="/cart">查看购物车</router-link>
+			</div>
+		</modal>
 		<nav-footer></nav-footer>
 	</div>    
 </template>
@@ -68,6 +88,7 @@
 	import NavHeader from '@/components/NavHeader'//名称不能与普通标签冲突
 	import NavFooter from '@/components/NavFooter'
 	import NavBread from '@/components/NavBread'
+	import Modal from '@/components/Modal'
 	import axios from 'axios'
 
 	export default {
@@ -100,21 +121,23 @@
 	      page: 1,
 	      pageSize: 8,
 	      busy: true,
-	      flag: false//控制是否继续加载,
-
+	      flag: false,//控制是否继续加载,
+	      showFlag: false,
+	      showCartFlag: false
 	    }
 	  },
 	  components:{
 	  	NavHeader,
 	  	NavFooter,
-	  	NavBread //es6
+	  	NavBread,
+	  	Modal //es6
 	  },
 	  mounted(){
 	  	this.getGoodsList();
 	  },
 	  methods:{
 	  	getGoodsList(flag){	  		
-	  		axios.get('/goods', {
+	  		axios.get('/goods/list', {
 	  			params: {
 	  				page: this.page,
 	  				pageSize: this.pageSize,
@@ -183,11 +206,16 @@
 	  		}).then((res)=>{
 	  			let response = res.data;
 	  			if(response.status == '0'){
-	  				alert('添加成功');
+	  				this.showCartFlag = true;
 	  			}else{
-	  				alert('msg:'+response.mag);
+	  				this.showFlag = true;
+	  				// alert('msg:'+response.msg);
 	  			}
 	  		})
+	  	},
+	  	closeModal(){
+	  		this.showFlag= false;
+	  		this.showCartFlag = false;
 	  	}
 	  }
 	}
