@@ -32,7 +32,8 @@ router.post('/login', (req, res, next)=>{
 		if(err){
 			res.json({
 				status: '1',
-				msg: err.message
+				msg: err.message,
+				result: ''
 			});
 		}else{
 			if(user){
@@ -52,7 +53,8 @@ router.post('/login', (req, res, next)=>{
 			}else{
 				res.json({
 					status: '1',
-					msg: '用户名或密码错误'
+					msg: '用户名或密码错误',
+					result: ''
 				});
 			}
 		}
@@ -74,4 +76,69 @@ router.post('/logout', (req, res, next)=>{
 		result: ''
 	});
 });
+
+router.get('/cart', (req,res,next)=>{
+	User.findOne({userId: req.cookies.userId}, (err,user)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			res.json({
+				status: '0',
+				msg: '',
+				result: user.cartList
+			})
+		}
+	})
+});
+
+//删除购物车商品
+router.post('/cartDel',(req,res,next)=>{
+	let userId = req.cookies.userId,
+			productId = req.body.productId;
+	User.update({userId: userId},{$pull:{'cartList':{'productId':productId}}},(err,user)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			res.json({
+				status: '0',
+				msg: '',
+				result: 'suc'
+			});
+		}
+	});
+});
+
+//修改购物车
+router.post('/cartEdit', (req,res,next)=>{
+	let userId = req.cookies.userId,
+			productId = req.body.product.productId,
+			productNum = req.body.product.productNum,
+			checked = req.body.product.checked;
+	User.update({userId: userId, 'cartList.productId': productId},
+	{'cartList.$.productNum': productNum,
+	 'cartList.$.checked': checked},(err, user)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			res.json({
+				status: '0',
+				msg: '',
+				result: 'suc'
+			});
+		}
+	})
+
+})
 module.exports = router;
