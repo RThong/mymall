@@ -16,7 +16,7 @@ var userSchema = new Schema({
 			productNum : Number
 		}
 	],
-	addList: Array
+	addressList: Array
 });
 
 module.exports = mongoose.model('User', userSchema);

@@ -76,21 +76,21 @@
 								</div>
 							</div>
 							<div class="cart-tab-2">
-								<div class="item-price">{{item.salePrice}}</div>
+								<div class="item-price">{{item.salePrice | currency('')}}</div>
 							</div>
 							<div class="cart-tab-3">
 								<div class="item-quantity">
 									<div class="select-self select-self-open">
 										<div class="select-self-area">
 											<a class="input-sub" href="javascript:;" @click="editCart('minu',item)">-</a>
-											<span class="select-ipt" v-model="item.productNum">{{item.productNum}}</span>
+											<span class="select-ipt">{{item.productNum}}</span>
 											<a class="input-add" href="javascript:;" @click="editCart('add',item)">+</a>
 										</div>
 									</div>
 								</div>
 							</div>
 							<div class="cart-tab-4">
-								<div class="item-price-total">{{item.productNum*item.salePrice}}</div>
+								<div class="item-price-total">{{item.productNum*item.salePrice | currency('')}}</div>
 							</div>
 							<div class="cart-tab-5">
 								<div class="cart-item-opration">
@@ -109,20 +109,25 @@
 				<div class="cart-foot-inner">
 					<div class="cart-foot-l">
 						<div class="item-all-check">
-							<a href="javascipt:;">
-								<span class="checkbox-btn item-check-btn">
+							<a href="javascript:;" @click="sellectAll(true)">
+								<span class="checkbox-btn item-check-btn" v-bind:class="{'check':checkedAll}">
 									<svg class="icon icon-ok"><use xlink:href="#icon-ok"/></svg>
 								</span>
-								<span>Select all</span>
+								<span>全选</span>
+							</a>
+						</div>
+						<div class="item-all-del">
+							<a href="javascript:;" class="item-del-btn" @click="sellectAll(false)">
+								<span>取消全选</span>
 							</a>
 						</div>
 					</div>
 					<div class="cart-foot-r">
 						<div class="item-total">
-							Item total: <span class="total-price">500</span>
+							总价: <span class="total-price">{{calcPrice | currency('¥')}}</span>
 						</div>
 						<div class="btn-wrap">
-							<a class="btn btn--red">Checkout</a>
+							<a href="javascript:;" class="btn btn--red" v-bind:class="{'btn--dis':checkedCount==0}" @click="checkOut()">确认</a>
 						</div>
 					</div>
 				</div>
@@ -142,6 +147,9 @@
 </div>
 </template>
 <style>
+	.btn--red{
+		padding: 0 50px;
+	}
 	.input-sub, .input-add {
 		min-width: 40px;
 		height: 100%;
@@ -188,11 +196,33 @@
 	  	NavBread,
 	  	Modal
 	  },
+	  computed: {//方法当做属性使用
+	  	checkedAll(){
+	  		return this.checkedCount == this.cartList.length;
+	  	},
+	  	checkedCount(){
+	  		let i = 0;
+	  		this.cartList.forEach((item)=>{
+	  			if(item.checked == '1') i++;
+	  		});
+	  		return i;
+	  	},
+	  	calcPrice(){
+	  		let result = 0;
+	  		this.cartList.forEach((item)=>{
+	  			if(item.checked == '1'){
+	  				result += item.productNum * item.salePrice;
+	  			}
+	  		});
+	  		return result;
+	  	}
+	  },
 	  mounted(){
 	  	this.init();
 	  },
 	  methods: {
 	  	init(){
+
 	  		axios.get('/users/cart').then((response)=>{
 	  			let res = response.data;
 	  			if(res.status == '0'){
@@ -238,8 +268,30 @@
 	  			product: item
 	  		}).then((response)=>{
 	  			let res = response.data;
-
 	  		})
+	  	},
+	  	sellectAll(flag){
+	  		this.checkedAll = flag;
+	  		if(flag){
+	  			axios.get('users/cartSelectAll').then((response)=>{
+	  				this.cartList.forEach((item)=>{
+	  					item.checked = '1';			
+	  				})
+	  			})
+	  		}else{
+	  			axios.get('users/cartReverseSelect').then((response)=>{
+	  				this.cartList.forEach((item)=>{
+	  					item.checked = '0';			
+	  				})
+	  			})
+	  		} 		
+	  	},
+	  	checkOut(){
+	  		if(this.checkedCount >= 1){
+	  			this.$router.push({
+	  				path:'/address'
+	  			});
+	  		}
 	  	}
 	  }
 	}

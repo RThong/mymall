@@ -123,8 +123,10 @@ router.post('/cartEdit', (req,res,next)=>{
 			productNum = req.body.product.productNum,
 			checked = req.body.product.checked;
 	User.update({userId: userId, 'cartList.productId': productId},
-	{'cartList.$.productNum': productNum,
-	 'cartList.$.checked': checked},(err, user)=>{
+	{
+		'cartList.$.productNum': productNum,
+		'cartList.$.checked': checked
+	},(err, user)=>{
 		if(err){
 			res.json({
 				status: '1',
@@ -139,6 +141,94 @@ router.post('/cartEdit', (req,res,next)=>{
 			});
 		}
 	})
+});
 
+//购物车全选
+router.get('/cartSelectAll',(req,res,next)=>{
+	let userId = req.cookies.userId;
+	User.findOne({userId: userId}, (err, doc)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			doc.cartList.forEach((item)=>{
+				item.checked = '1';
+			});
+			doc.save((err1, user)=>{
+				if(err1){
+					res.json({
+						status: '1',
+						msg: err1.message,
+						result: ''
+					});
+				}else{
+					res.json({
+						status: '0',
+						msg: '',
+						result: ''
+					});
+				}	
+			})
+		}
+	});
+});
+
+//购物车反选
+router.get('/cartReverseSelect',(req,res,next)=>{
+	let userId = req.cookies.userId;
+	User.findOne({userId: userId}, (err, doc)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			doc.cartList.forEach((item)=>{
+				item.checked = '0';
+			});
+			doc.save((err1, user)=>{
+				if(err1){
+					res.json({
+						status: '1',
+						msg: err1.message,
+						result: ''
+					});
+				}else{
+					res.json({
+						status: '0',
+						msg: '',
+						result: ''
+					});
+				}	
+			})
+		}
+	});
+});
+
+//地址列表接口
+router.get('/addressList', (req,res,next)=>{
+	let userId = req.cookies.userId;
+	User.findOne({userId: userId}, (err, user)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			res.json({
+				status: '0',
+				msg: '',
+				result: {
+					count: user.addressList.length,
+					list: user.addressList
+				}
+			});
+		}	
+	})
 })
 module.exports = router;
