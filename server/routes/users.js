@@ -230,5 +230,71 @@ router.get('/addressList', (req,res,next)=>{
 			});
 		}	
 	})
-})
+});
+
+//设置默认地址
+router.post('/setDefault',(req,res,next)=>{
+	let userId = req.cookies.userId,
+			addressId = req.body.address.addressId;
+	if(!addressId){
+		res.json({
+			status: '1003',
+			msg: 'addressId is null',
+			result: ''
+		});
+	}else{
+		User.findOne({userId: userId}, (err, user)=>{
+			if(err){
+				res.json({
+					status: '1',
+					msg: err.message,
+					result: ''
+				});
+			}else{
+				user.addressList.forEach((item)=>{
+					item.isDefault = false;
+					if(addressId == item.addressId){
+						item.isDefault = true;
+					}
+				});
+				user.save((err1, doc)=>{
+					if(err1){
+						res.json({
+							status: '1',
+							msg: err1.message,
+							result: ''
+						});
+					}else{
+						res.json({
+							status: '0',
+							msg: '',
+							result: ''
+						});
+					}
+				})
+			}
+		});
+	}	
+});
+
+//删除地址
+router.post('/addressDel',(req,res,next)=>{
+	let userId = req.cookies.userId,
+			addressId = req.body.addressId;
+	User.update({userId: userId},{$pull:{'addressList':{'addressId':addressId}}},(err,user)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			res.json({
+				status: '0',
+				msg: '',
+				result: 'suc'
+			});
+		}
+	});
+});
 module.exports = router;

@@ -60,21 +60,21 @@
 					<div class="addr-list-wrap">
 						<div class="addr-list">
 							<ul>
-								<li v-for="(item,index) in addressListFilter" v-bind:class="{'check':checkedFlag==index}" @click="checkedFlag=index">
+								<li v-for="(item,index) in addressListFilter" v-bind:class="{'check':checkedFlag==index}" @click="checkedFlag=index;selectedAddrId=item.addressId;">
 									<dl>
 										<dt>{{item.userName}}</dt>
 										<dd class="address">{{item.streetName}}</dd>
 										<dd class="tel">{{item.tel}}</dd>
 									</dl>
 									<div class="addr-opration addr-del">
-										<a href="javascript:;" class="addr-del-btn">
+										<a href="javascript:;" class="addr-del-btn" @click="delCartConfirm(item.addressId, index)">
 											<svg class="icon icon-del"><use xlink:href="#icon-del"></use></svg>
 										</a>
 									</div>
 									<div class="addr-opration addr-set-default">
-										<a href="javascript:;" class="addr-set-default-btn"><i>Set default</i></a>
+										<a href="javascript:;" class="addr-set-default-btn" v-if="!item.isDefault" @click="setDefault(item)"><i>Set default</i></a>
 									</div>
-									<div class="addr-opration addr-default">Default address</div>
+									<div class="addr-opration addr-default" v-if="item.isDefault">Default address</div>
 								</li>
 								<li class="addr-new">
 									<div class="add-new-inner">
@@ -119,12 +119,20 @@
 						</div>
 					</div>
 					<div class="next-btn-wrap">
-						<a class="btn btn--m btn--red">Next</a>
+						<router-link class="btn btn--m btn--red" v-bind:to="{path:'orderConfirm',query:{'addressId':selectedAddrId}}">Next</router-link>
 					</div>
 				</div>
 			</div> 
 		</div>
-		<modal></modal>
+		<modal v-bind:mdShow="delFlag" v-on:close="closeModal()">
+			<p slot="message">
+				您是否确认删除此地址?
+			</p>
+			<div slot="btnGroup">
+				<a class="btn btn--m" href="javascript:;" @click="delAddress()">确认</a>
+				<a class="btn btn--m" href="javascript:;" @click="delFlag=false">取消</a>
+			</div>
+		</modal>
 		<nav-footer></nav-footer>
 	</div>
 </template>
@@ -146,7 +154,11 @@
 	    	limit: 3,
 	      addressList: [],
 	      checkedFlag: 0,
-	      rotateFlag: false
+	      rotateFlag: false,
+	      delFlag: false,
+	      addressId: '',
+	      index: '',
+	      selectedAddrId: ''
 	    }
 	  },
 	  components: {
@@ -168,8 +180,18 @@
 	  	init(){
 	  		axios.get('/users/addressList').then((response)=>{
 	  			let res = response.data;
+
 	  			if(res.status == '0'){
 	  				this.addressList = res.result.list;
+	  				this.addressList.some((item, index)=>{
+	  					if(item.isDefault == true){
+	  						this.addressList.splice(index, 1);
+	  						this.addressList.unshift(item);
+	  						this.selectedAddrId = item.addressId;
+	  						return true;
+	  					}
+	  				});
+	  				this.checkedFlag = 0;
 	  			}
 	  		})
 	  	},
@@ -180,6 +202,35 @@
 	  			this.limit = 3;
 	  		}  		
 	  		this.rotateFlag = !this.rotateFlag;
+	  	},
+	  	setDefault(address){
+	  		axios.post('/users/setDefault',{
+	  			address: address
+	  		}).then((response)=>{
+	  			let res = response.data;
+	  			if(res.status == '0'){
+	  				this.init();
+	  			}
+	  		})
+	  	},
+	  	delCartConfirm(addressId, index){
+	  		this.addressId = addressId;
+	  		this.index = index;
+	  		this.delFlag = true;
+	  	},
+	  	delAddress(){
+	  		axios.post('/users/addressDel',{
+	  			addressId: this.addressId
+	  		}).then((response)=>{
+	  			let res = response.data;
+	  			if(res.status == '0'){
+	  				this.delFlag = false;
+	  				this.addressList.splice(this.index, 1);
+	  			}
+	  		});
+	  	},
+	  	closeModal(){
+	  		this.delFlag= false;
 	  	}
 	  }
 	}
