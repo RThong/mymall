@@ -5,7 +5,16 @@ var userSchema = new Schema({
 	userId: String,
 	userName: String,
 	userPwd: String,
-	orderList: Array,//
+	orderList: [
+		{
+			orderId: String,
+			orderTotal: Number,
+			addressInfo: Object,
+			goodsList: Array,
+			orderStatus: String,
+			createDate : String
+		}
+	],
 	cartList:[
 		{
 			productId: String,

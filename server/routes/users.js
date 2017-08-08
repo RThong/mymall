@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
+require('../util/util');
 var User = require('../models/user');
 
 /* GET users listing. */
@@ -77,6 +78,7 @@ router.post('/logout', (req, res, next)=>{
 	});
 });
 
+//获取购物车
 router.get('/cart', (req,res,next)=>{
 	User.findOne({userId: req.cookies.userId}, (err,user)=>{
 		if(err){
@@ -297,4 +299,119 @@ router.post('/addressDel',(req,res,next)=>{
 		}
 	});
 });
+
+//订单页
+router.post('/payMent',(req,res,next)=>{
+	let userId = req.cookies.userId,
+			addressId = req.body.addressId
+			orderTotal = req.body.orderTotal
+			User.findOne({userId: userId}, (err1,doc1)=>{
+				if(err1){
+					res.json({
+						status: '1',
+						msg: err1.message,
+						result: ''
+					});
+				}else{
+					let address = {},
+							goodsList = [];
+					//获取用户当前地址
+					doc1.addressList.some((item)=>{
+						if(item.addressId == addressId){
+							address = item;
+							return true;
+						}
+					});
+					//获取用户购买商品
+					doc1.cartList.forEach((item)=>{
+						if(item.checked == '1'){
+							goodsList.push(item);
+						}
+					});
+
+					let paltform = '622',
+							r1 = Math.floor(Math.random()*10),
+							r2 = Math.floor(Math.random()*10),
+							sysDate = new Date().Format('yyyyMMddhhmmss'),
+							createDate = new Date().Format('yyyy-MM-dd hh:mm:ss');
+					let orderId = paltform + r1 + sysDate + r2;
+
+					let order = {
+						orderId: orderId,
+						orderTotal: orderTotal,
+						addressInfo: address,
+						goodsList: goodsList,
+						orderStatus: '1',
+						createDate: createDate
+					};
+
+					doc1.orderList.push(order);
+					doc1.save((err2, doc2)=>{
+						if(err2){
+							res.json({
+								status: '1',
+								msg: err2.message,
+								result: ''
+							});
+						}else{
+							res.json({
+								status: '0',
+								msg: '',
+								result: {
+									orderId: order.orderId,
+									orderTotal: order.orderTotal
+								}
+							});
+						}
+					})
+				}
+			})
+});
+
+//订单详细
+router.post('/orderDetail', (req,res,next)=>{
+	let userId = req.cookies.userId,
+			orderId = req.body.orderId;
+	User.findOne({userId: userId}, (err, user)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			let orderList = user.orderList;
+			if(orderList.length > 0){
+				let orderTotal = 0;
+				orderList.forEach((item)=>{
+					if(item.orderId == orderId){
+						orderTotal = item.orderTotal;
+					}
+				});
+				if(orderTotal > 0){
+					res.json({
+						status: '0',
+						msg: '',
+						result: {
+							orderId: orderId,
+							orderTotal: orderTotal
+						}
+					});
+				}else{
+					res.json({
+						status: '12002',
+						msg: '无此订单',
+						result: ''
+					});
+				}
+			}else{
+				res.json({
+					status: '12001',
+					msg: '当前用户未创建订单',
+					result: ''
+				});
+			}
+		}
+	})
+})
 module.exports = router;

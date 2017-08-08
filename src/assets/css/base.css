@@ -931,14 +931,10 @@ html {
 }
 
 .footer__secondary__nav {
-  position: absolute;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-  right: 36px;
+  text-align: center;
+  line-height: 100px;
 }
-
+  
 .footer__secondary__nav a,
 .footer__secondary__nav span {
   color: #ada9a5;
