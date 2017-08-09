@@ -97,6 +97,30 @@ router.get('/cart', (req,res,next)=>{
 	})
 });
 
+//获取购物车数量
+router.get('/getCart',(req,res,next)=>{
+	let userId = req.cookies.userId;
+	User.findOne({userId: userId}, (err,user)=>{
+		if(err){
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		}else{
+			let cartCount = 0;
+			user.cartList.forEach((item)=>{
+				cartCount += item.productNum;
+			})
+			res.json({
+				status: '0',
+				msg: '',
+				result: cartCount
+			});
+		}
+	})
+});
+
 //删除购物车商品
 router.post('/cartDel',(req,res,next)=>{
 	let userId = req.cookies.userId,
