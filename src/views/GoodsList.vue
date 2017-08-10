@@ -207,6 +207,7 @@
 	  			let response = res.data;
 	  			if(response.status == '0'){
 	  				this.showCartFlag = true;
+	  				this.$store.commit('updateCartCount', 1);
 	  			}else{
 	  				this.showFlag = true;
 	  				// alert('msg:'+response.msg);

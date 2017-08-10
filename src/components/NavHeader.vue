@@ -20,7 +20,7 @@
 					<a href="javascript:void(0)" class="navbar-link" @click="loginFlag=true" v-if="!nickName">Login</a>
 					<a href="javascript:void(0)" class="navbar-link" @click="logout()" v-if="nickName">Logout</a>
 					<div class="navbar-cart-container">
-						<span class="navbar-cart-count" v-if="cartCount>0">{{cartCount}}</span>
+						<span class="navbar-cart-count" v-if="nickName&&cartCount>0">{{cartCount}}</span>
 						<a class="navbar-link navbar-cart-link" href="/cart">
 							<svg class="navbar-cart-logo">
 								<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-cart"></use>
@@ -126,7 +126,7 @@
 					let res = response.data;
 					if(res.status == '0'){
 						this.nickName = '';
-						this.$store.commit('updateCartCount', 0);
+						this.$router.push('/');
 					}
 				})
 			},
@@ -134,7 +134,7 @@
 				axios.get('/users/getCart').then((response)=>{
 					let res = response.data;
 					if(res.status == '0'){
-						this.$store.commit('updateCartCount', res.result);
+						this.$store.commit('initCartCount', res.result);
 					}
 				})
 			}
